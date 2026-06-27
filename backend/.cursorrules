@@ -1,0 +1,58 @@
+# AI RULES — BACKEND (Laravel 11 + PostgreSQL)
+# Project: DSS Optimasi FCR Ikan Nila Bioflok
+
+## SCOPE & BATASAN KERAS
+- Kamu HANYA boleh menulis kode PHP/Laravel di dalam folder `backend/`.
+- DILARANG menyentuh, membuat, atau mengedit file apapun di folder `frontend/`
+  (termasuk .jsx, .tsx, .css, package.json frontend). Itu di luar tanggung jawabmu.
+- DILARANG membuat halaman Blade/view HTML. Sistem ini PURE REST API — setiap
+  response WAJIB berupa JSON, tidak pernah HTML, termasuk untuk error page.
+
+## ARSITEKTUR WAJIB (Service Layer Pattern)
+- Controller WAJIB "skinny": maksimal 5 baris kode per method.
+  Tidak boleh ada query Eloquent atau business logic langsung di Controller.
+- Seluruh business logic WAJIB diletakkan di `app/Services/`.
+- Validasi input WAJIB menggunakan Form Request (`app/Http/Requests/`),
+  tidak boleh validasi inline `$request->validate()` di Controller.
+- Transformasi data sebelum dikirim ke frontend WAJIB lewat API Resource
+  (`app/Http/Resources/`), tidak boleh `return $model` mentah.
+- Setiap response WAJIB konsisten menggunakan `ApiResponseTrait`
+  (successResponse/errorResponse) — jangan buat format JSON baru yang berbeda.
+- Endpoint WAJIB versioned di bawah `/api/v1/...`.
+
+## ATURAN KHUSUS DOMAIN (ANTI BLACK-BOX)
+- Kolom `temp_interpretation`, `ph_interpretation`, `tds_interpretation`,
+  `nh3_interpretation`, `water_condition`, dan `correlation_notes` di tabel
+  `sensor_readings` TIDAK BOLEH pernah diisi langsung dari input request/client.
+  Kolom ini HANYA boleh dihasilkan oleh logika di `SensorReadingService`.
+- Setiap ambang batas (threshold) interpretasi WAJIB ditulis sebagai konstanta
+  bernama (`private const`) yang jelas, bukan angka ajaib (magic number)
+  tersembunyi di tengah kode — supaya logikanya bisa diaudit dosen/penguji.
+- `water_condition` adalah PATOKAN UTAMA sistem (sesuai revisi dosen penguji).
+  Setiap fitur baru yang melibatkan keputusan pakan harus mengacu ke kolom ini.
+
+## DATABASE
+- Tipe data untuk angka sensor (suhu, pH, TDS, dll) WAJIB `decimal`, JANGAN
+  `float`/`double` — presisi penting untuk perhitungan agregasi nanti.
+- Setiap migration baru untuk tabel `sensor_readings` WAJIB menambahkan index
+  yang relevan (minimal `pond_id`, kolom waktu, dan kolom yang sering difilter).
+- JANGAN mengedit migration file yang SUDAH dijalankan (sudah ada di riwayat
+  `php artisan migrate`). Buat migration baru untuk perubahan skema.
+- Operasi insert/update multi-tabel WAJIB dibungkus `DB::transaction()`.
+
+## LARANGAN TAMBAHAN
+- JANGAN install package composer baru tanpa bertanya/konfirmasi dulu.
+- JANGAN mengubah struktur key di file `.env` tanpa memberi tahu secara eksplisit.
+- JANGAN membuat seeder/factory yang langsung menyentuh struktur tabel produksi
+  tanpa konfirmasi — tanyakan dulu skenario datanya.
+- Setiap query yang ditulis manual (raw SQL/DB::raw) WAJIB disertai komentar
+  alasan kenapa tidak memakai Eloquent biasa.
+- Tangani SELALU error dengan try-catch + `Log::error()` di level Service,
+  jangan biarkan exception polos sampai ke Controller.
+
+## GAYA KODE
+- Ikuti PSR-12 dan konvensi penamaan Laravel standar (camelCase untuk method,
+  snake_case untuk kolom database).
+- Setiap method Service yang berisi logika domain non-trivial (seperti rule
+  interpretasi kondisi air) WAJIB diberi komentar singkat penjelasan alasan
+  bisnisnya, bukan cuma penjelasan teknis kode.
