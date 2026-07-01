@@ -11,6 +11,9 @@ class AuthService
 {
     public function registerUser(array $data): array
     {
+        // Enforce default role securely on the backend
+        $data['role'] = 'petambak';
+        
         $data['password'] = Hash::make($data['password']);
         $user = User::create($data);
         

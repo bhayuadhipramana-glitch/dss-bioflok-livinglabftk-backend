@@ -8,15 +8,20 @@ use App\Http\Controllers\Api\V1\SensorReadingController;
 
 Route::prefix('v1')->group(function () {
     
-    
+    // ==========================================
     // PUBLIC ROUTES (Tidak butuh token)
-   
+    // ==========================================
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    
+    // Rute Sensor ditaruh di sini agar bisa kita test langsung dari React dan Bruno tanpa pusing soal Auth dulu
+    Route::get('/sensor-readings', [SensorReadingController::class, 'index']);
+    Route::post('/sensor-readings', [SensorReadingController::class, 'store']);
+    Route::get('/sensor-status', [SensorReadingController::class, 'checkStatus']);
 
-   
+    // ==========================================
     // PROTECTED ROUTES (Wajib token Sanctum)
- 
+    // ==========================================
     Route::middleware('auth:sanctum')->group(function () {
         
         // Endpoint Auth
@@ -28,9 +33,7 @@ Route::prefix('v1')->group(function () {
 
         // CRUD Catatan Pakan (FeedLog) - Sesuai Kesepakatan: Index & Store
         Route::apiResource('feed-logs', FeedLogController::class)->only(['index', 'store']);
-
-        // CRUD Data Sensor (SensorReading) - Immutable: Tanpa Update
-        Route::apiResource('sensor-readings', SensorReadingController::class)->only(['index', 'store', 'show', 'destroy']);
         
+        // (SensorReading apiResource dihapus dari sini agar tidak bentrok dengan rute public di atas)
     });
 });

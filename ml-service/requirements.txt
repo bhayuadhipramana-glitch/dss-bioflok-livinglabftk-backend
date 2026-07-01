@@ -1,0 +1,6 @@
+# FastAPI ML Microservice — Bioflok Water Quality Classifier
+fastapi==0.115.12
+uvicorn==0.34.3
+scikit-learn==1.7.0
+pandas==2.3.0
+joblib==1.5.1
