@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('DO_condition')->nullable();
             $table->string('NH3_condition')->nullable();
             $table->string('water_condition')->nullable();
+            $table->text('recommendation')->nullable();
             $table->text('correlation_notes')->nullable();
             
             $table->timestamps();

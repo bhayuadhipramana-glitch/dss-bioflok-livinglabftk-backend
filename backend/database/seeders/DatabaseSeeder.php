@@ -21,5 +21,32 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        \App\Models\Pond::insert([
+            [
+                'name' => 'Kolam Bioflok Alpha',
+                'location' => 'Blok A1',
+                'capacity_m3' => 10.5,
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Kolam Bioflok Beta',
+                'location' => 'Blok A2',
+                'capacity_m3' => 15.0,
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Kolam Bioflok Gamma',
+                'location' => 'Blok B1',
+                'capacity_m3' => 20.0,
+                'status' => 'maintenance',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
     }
 }

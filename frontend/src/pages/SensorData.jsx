@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import useSensorStore from '../store/sensorStore';
+import axiosClient from '../api/axiosClient';
 
 /* ──────────────────────────────────────────────
    Parameter config for the form fields
@@ -28,7 +29,7 @@ const PARAMS = [
   { key: 'nh3', label: 'NH3', unit: 'mg/L', icon: FlaskConical, color: 'text-violet-600', step: '0.01', min: 0, max: 5 },
 ];
 
-const EMPTY_FORM = { temperature: '', ph: '', do: '', nh3: '' };
+const EMPTY_FORM = { pond_id: '', temperature: '', ph: '', do: '', nh3: '' };
 
 /* ──────────────────────────────────────────────
    Helper: format ISO timestamp → readable
@@ -95,9 +96,21 @@ export default function SensorData() {
   const [showDeleteModal, setShowDeleteModal] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [ponds, setPonds] = useState([]);
+
   // Fetch real data from the database on mount
   useEffect(() => {
     fetchReadings();
+    
+    // Fetch ponds for the dropdown
+    axiosClient.get('/ponds')
+      .then(res => {
+        // Handle successful response where data is wrapped in 'data'
+        setPonds(res.data.data || []);
+      })
+      .catch(err => {
+        console.error('Failed to fetch ponds:', err);
+      });
   }, [fetchReadings]);
 
   /* ── Form handlers ── */
@@ -110,7 +123,7 @@ export default function SensorData() {
     setIsSubmitting(true);
 
     const payload = {
-      pond_id: 1, // default pond per API contract
+      pond_id: Number(form.pond_id),
       temperature: +form.temperature,
       ph: +form.ph,
       do: +form.do,
@@ -137,6 +150,7 @@ export default function SensorData() {
   const startEdit = (record) => {
     setEditingId(record.id);
     setForm({
+      pond_id: String(record.pond_id || ''),
       temperature: String(record.temperature),
       ph: String(record.ph),
       do: String(record.do),
@@ -159,7 +173,7 @@ export default function SensorData() {
   };
 
   const isFormValid =
-    form.temperature !== '' && form.ph !== '' && form.do !== '' && form.nh3 !== '';
+    form.pond_id !== '' && form.temperature !== '' && form.ph !== '' && form.do !== '' && form.nh3 !== '';
 
   // Display records in reverse chronological (newest first for the table)
   const displayRecords = [...readings].reverse();
@@ -204,7 +218,26 @@ export default function SensorData() {
           </p>
 
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
+              <div>
+                <label className="flex items-center gap-1.5 text-sm font-semibold text-slate-800 mb-1.5">
+                  <Database className="w-4 h-4 text-blue-600" />
+                  Kolam
+                </label>
+                <select
+                  value={form.pond_id}
+                  onChange={(e) => handleChange('pond_id', e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
+                  required
+                >
+                  <option value="">Pilih Kolam...</option>
+                  {ponds.map(pond => (
+                    <option key={pond.id} value={pond.id}>
+                      {pond.name || `Kolam ${pond.id}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
               {PARAMS.map((p) => {
                 const Icon = p.icon;
                 return (

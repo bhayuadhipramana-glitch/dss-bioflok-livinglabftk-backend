@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import axios from 'axios';
 import axiosClient from '../api/axiosClient';
 
 /**
@@ -53,7 +54,7 @@ const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Sanctum CSRF handshake — must precede every stateful auth request
-      await axiosClient.get('http://127.0.0.1/sanctum/csrf-cookie');
+      await axios.get('/sanctum/csrf-cookie');
       const { data } = await axiosClient.post('/login', { email, password });
       // Laravel Sanctum typically returns { user, token } or { data: { user, token } }
       const user = data.user ?? data.data?.user;
@@ -98,7 +99,7 @@ const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Sanctum CSRF handshake — must precede every stateful auth request
-      await axiosClient.get('http://127.0.0.1/sanctum/csrf-cookie');
+      await axios.get('/sanctum/csrf-cookie');
       const { data } = await axiosClient.post('/register', {
         name,
         email,

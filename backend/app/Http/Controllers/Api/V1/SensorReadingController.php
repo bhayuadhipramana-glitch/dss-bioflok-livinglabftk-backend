@@ -23,8 +23,9 @@ class SensorReadingController
     // Fungsi untuk menerima input dari form React dan menyimpannya ke database
     public function store(Request $request)
     {
-        // 1. Validasi input yang masuk (Hanya 4 parameter mutlak)
+        // 1. Validasi input yang masuk
         $validated = $request->validate([
+            'pond_id' => 'required|exists:ponds,id',
             'temperature' => 'required|numeric',
             'ph' => 'required|numeric',
             'do' => 'required|numeric',
@@ -54,8 +55,9 @@ class SensorReadingController
 
         $now = now();
 
-        // 3. Simpan ke database PostgreSQL
+        // 3. Simpan ke database PostgreSQL / MySQL
         $id = DB::table('sensor_readings')->insertGetId([
+            'pond_id' => $validated['pond_id'],
             'temperature' => $validated['temperature'],
             'ph' => $validated['ph'],
             'do' => $validated['do'],
@@ -72,6 +74,7 @@ class SensorReadingController
             'message' => 'Data kualitas air berhasil disimpan!',
             'data' => [
                 'id' => $id,
+                'pond_id' => $validated['pond_id'],
                 'temperature' => (float)$validated['temperature'],
                 'ph' => (float)$validated['ph'],
                 'do' => (float)$validated['do'],
